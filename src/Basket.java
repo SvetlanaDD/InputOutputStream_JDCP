@@ -2,10 +2,11 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Basket {
+public class Basket implements Serializable {
+    private static final long serialVersionUID = 123L;
     private String[] products;
     private int[] prices;
-    private int [] count;
+    private int[] count;
 
     public Basket(String[] products, int[] prices) {
         this.products = products;
@@ -19,32 +20,33 @@ public class Basket {
     }
 
     // метод добавления amount штук продукта номер productNum в корзину;
-    public void addToCart(int productNum, int amount){
+    public void addToCart(int productNum, int amount) {
         this.count[productNum] += amount;
     }
 
     // метод вывода на экран покупательской корзины.
-    public void printCart(){
-        System.out.printf("%3s|%17s|%6s|%12s|%7s\n"," № ","Название продукта", "Кол-во", "Цена, руб/шт", "В сумме");
+    public void printCart() {
+        System.out.printf("%3s|%17s|%6s|%12s|%7s\n", " № ", "Название продукта", "Кол-во", "Цена, руб/шт", "В сумме");
         int sum = 0;
         for (int i = 0; i < products.length; i++) {
             if (count[i] != 0) {
-                System.out.printf("%-3s|%-17s|%-6s|%-12s|%-7s\n",i+1,products[i],count[i],prices[i],count[i] * prices[i]);
+                System.out.printf("%-3s|%-17s|%-6s|%-12s|%-7s\n", i + 1, products[i], count[i], prices[i], count[i] * prices[i]);
                 sum += count[i] * prices[i];
             }
         }
         System.out.println("Итого: " + sum + " руб.");
     }
 
-    public void printListProducts(){
+    public void printListProducts() {
         System.out.println("Список возможных продуктов для покупки");
-        System.out.printf("%3s|%17s|%6s\n"," № ","Название продукта", "Цена");
+        System.out.printf("%3s|%17s|%6s\n", " № ", "Название продукта", "Цена");
         for (int i = 0; i < products.length; i++) {
-                System.out.printf("%-3s|%-17s|%-5s руб/шт\n",i+1,products[i],prices[i]);
+            System.out.printf("%-3s|%-17s|%-5s руб/шт\n", i + 1, products[i], prices[i]);
         }
     }
+
     // метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void saveTxt(File textFile)throws IOException {
+    public void saveTxt(File textFile) throws IOException {
         try (FileWriter writer = new FileWriter(textFile, false)) {
             for (String product : products) {
                 writer.write(product + " ");
@@ -59,33 +61,47 @@ public class Basket {
             }
             writer.append('\n');
             writer.flush();
-        }catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
     }
+
     // статический(!) метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
-    static Basket loadFromTxtFile(File textFile){
+    public static Basket loadFromTxtFile(File textFile) {
         Basket basket = new Basket();
         try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
             String str;
-            List <String> listStr = new ArrayList<>();
-            while ((str = reader.readLine())!= null) {
+            List<String> listStr = new ArrayList<>();
+            while ((str = reader.readLine()) != null) {
                 listStr.add(str);
             }
 
             basket.products = listStr.get(0).split(" ");
-            String [] priceStr = listStr.get(1).split(" ");
-            String [] countStr = listStr.get(2).split(" ");
+            String[] priceStr = listStr.get(1).split(" ");
+            String[] countStr = listStr.get(2).split(" ");
 
-            for (int i=0; i < priceStr.length; i++){
+            for (int i = 0; i < priceStr.length; i++) {
                 basket.prices[i] = Integer.parseInt(priceStr[i]);
             }
-            for (int i=0; i < countStr.length; i++){
+            for (int i = 0; i < countStr.length; i++) {
                 basket.count[i] = Integer.parseInt(countStr[i]);
             }
-        }catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
+        return basket;
+    }
+
+    public void saveBin(File file) throws IOException {
+        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+        out.writeObject(this);
+        out.close();
+    }
+
+    public static Basket loadFromBinFile(File file) throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+        Basket basket = (Basket) in.readObject();
+        in.close();
         return basket;
     }
 
