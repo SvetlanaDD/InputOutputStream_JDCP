@@ -2,7 +2,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Basket {
+public class Basket implements Serializable {
+    private static final long serialVersionUID = 123L;
     private String[] products;
     private int[] prices;
     private int [] count;
@@ -86,6 +87,18 @@ public class Basket {
         }catch (IOException ex){
             System.out.println(ex.getMessage());
         }
+        return basket;
+    }
+    public void saveJSON(File file) throws IOException {
+        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+        out.writeObject(this);
+        out.close();
+    }
+
+    public static Basket loadFromJSONFile(File file) throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+        Basket basket = (Basket) in.readObject();
+        in.close();
         return basket;
     }
 
